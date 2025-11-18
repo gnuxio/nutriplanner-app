@@ -47,7 +47,7 @@ npm run lint
 ### Directory Structure
 
 - `app/` - Next.js App Router pages and layouts
-  - `(auth)/` - Route group for authentication pages (login, register, setup)
+  - `(auth)/` - Route group for authentication pages (login, register)
   - `api/` - API routes
     - `profile/onboarding/` - Onboarding data submission endpoint
   - `dashboard/` - Main dashboard after login
@@ -64,14 +64,15 @@ npm run lint
   - `useAuth.ts` - Authentication hook (user state, loading, signOut)
 
 - `lib/` - Utilities and services
-  - `supabase/` - Supabase clients (NEW - v2 architecture)
+  - `supabase/` - Supabase SSR clients
     - `client.ts` - Browser client for Client Components
     - `server.ts` - Server client for Server Components/Actions
-    - `middleware.ts` - Middleware helper for session management
+    - `middleware.ts` - Middleware helper for session management and route protection
   - `types/` - TypeScript type definitions
     - `onboarding.ts` - Shared types for onboarding flow
-  - `supabaseClient.ts` - **DEPRECATED** - Legacy client (kept for compatibility)
   - `utils.ts` - Utility functions (cn for class merging)
+
+- `middleware.ts` - Route protection and session management (edge runtime)
 
 ### Authentication Flow
 
