@@ -39,14 +39,20 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Proteger rutas
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/register') &&
-        !request.nextUrl.pathname.startsWith('/setup')
-    ) {
-        // No hay usuario, redirigir al login
+    const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
+                      request.nextUrl.pathname.startsWith('/register');
+    const isProtectedPage = request.nextUrl.pathname.startsWith('/dashboard') ||
+                           request.nextUrl.pathname.startsWith('/onboarding');
+
+    // Redirect authenticated users away from auth pages
+    if (user && isAuthPage) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
+    }
+
+    // Redirect unauthenticated users to login
+    if (!user && isProtectedPage) {
         const url = request.nextUrl.clone();
         url.pathname = '/login';
         return NextResponse.redirect(url);
