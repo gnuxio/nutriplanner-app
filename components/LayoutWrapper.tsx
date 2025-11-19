@@ -40,9 +40,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
             {/* Main Content Wrapper - Full width on mobile, with margin on desktop */}
             <div
-                className={`
-                    min-h-screen transition-all duration-300
-                    ${isCollapsed ? 'md:ml-20' : 'md:ml-64'}
+                className={`transition-all duration-300 ${isCollapsed
+                    ? 'md:ml-20'
+                    : 'md:ml-64'}
                 `}
             >
                 {/* Mobile Header */}
