@@ -104,7 +104,7 @@ export default function Login() {
                             </div>
                         </div>
                         <CardTitle className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                            Bienvenido a NutriPlanner.ai
+                            Bienvenido a Menuum
                         </CardTitle>
                         <p className="text-gray-500 text-sm">
                             Planifica tu semana sin complicarte 🍃

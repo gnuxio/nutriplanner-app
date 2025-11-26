@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "FMPlanner.ai",
+    title: "Menuum",
     description: "Eat smart. Plan easy.",
 };
 

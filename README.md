@@ -1,6 +1,8 @@
-# NutriPlanner.ai
+# Menuum
 
 Intelligent meal planning application built with Next.js and Supabase.
+
+**Live at:** https://app.menuum.com/
 
 ## Features
 
@@ -49,8 +51,8 @@ npm run dev
 
 Build and run with Docker:
 ```bash
-docker build -t nutriplanner .
-docker run -p 3000:3000 nutriplanner
+docker build -t menuum .
+docker run -p 3000:3000 menuum
 ```
 
 ## Project Structure

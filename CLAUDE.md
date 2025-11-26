@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NutriPlanner.ai (also referenced as FMPlanner.ai) is a Next.js 16 application for intelligent meal planning. The app uses Supabase for authentication and backend services, with a multi-step onboarding flow to collect user nutrition preferences and goals.
+Menuum is a Next.js 16 application for intelligent meal planning. The app uses Supabase for authentication and backend services, with a multi-step onboarding flow to collect user nutrition preferences and goals.
+
+**Live at:** https://app.menuum.com/
 
 ## Development Commands
 
@@ -282,7 +284,8 @@ className="bg-white/70 backdrop-blur-xl rounded-3xl border-2 border-gray-200/50"
 ## Key Considerations
 
 - **Language**: Spanish is used throughout the UI
-- **Branding**: Package name is "fmplanning-frontend" but app displays "NutriPlanner.ai"
+- **Branding**: Package name is "menuum-frontend" and app displays "Menuum"
+- **Domain**: Live at https://app.menuum.com/
 - **Database**: Onboarding saves to `user_profiles` table (not `profiles`)
 - **Form Library**: None - vanilla React state management with validation functions
 - **Next.js Version**: 16 with Turbopack (deprecation warning for "middleware" → "proxy" can be ignored)

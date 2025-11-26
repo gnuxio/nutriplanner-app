@@ -73,11 +73,11 @@ export default function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
                 {/* Header */}
                 <div className="p-6 border-b border-gray-200">
                     <h1 className={`text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent ${isCollapsed ? 'hidden md:block md:text-center' : ''}`}>
-                        {isCollapsed ? 'N' : 'NutriPlanner.ai'}
+                        {isCollapsed ? 'M' : 'Menuum'}
                     </h1>
                     {/* En mobile siempre mostrar el nombre completo */}
                     <h1 className="md:hidden text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                        NutriPlanner.ai
+                        Menuum
                     </h1>
                 </div>
 
