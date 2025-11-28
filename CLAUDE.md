@@ -69,7 +69,7 @@ npm run lint
   - `supabase/` - Supabase SSR clients
     - `client.ts` - Browser client for Client Components
     - `server.ts` - Server client for Server Components/Actions
-    - `middleware.ts` - Middleware helper for session management and route protection
+    - `proxy.ts` - Proxy helper for session management and route protection
   - `types/` - TypeScript type definitions
     - `onboarding.ts` - Shared types for onboarding flow
   - `utils.ts` - Utility functions (cn for class merging)
@@ -198,17 +198,17 @@ The project includes a multi-stage Dockerfile optimized for Next.js standalone o
    - Manages cookies via Next.js `cookies()` API
    - Used in: dashboard, API routes
 
-3. **Middleware Client** (`lib/supabase/middleware.ts`):
+3. **Proxy Client** (`lib/supabase/proxy.ts`):
    ```typescript
-   import { updateSession } from '@/lib/supabase/middleware'
+   import { updateSession } from '@/lib/supabase/proxy'
    ```
-   - **Do NOT import directly** - used only by `middleware.ts`
+   - **Do NOT import directly** - used only by `proxy.ts`
    - Handles session refresh and route protection
    - Returns modified NextResponse with updated cookies
 
 ### Route Protection Pattern
 
-**Edge Middleware** (`middleware.ts`):
+**Proxy** (`proxy.ts`):
 - Runs on ALL requests (see config matcher)
 - Calls `updateSession()` which:
   1. Refreshes Supabase session automatically
@@ -217,7 +217,7 @@ The project includes a multi-stage Dockerfile optimized for Next.js standalone o
 - Protected routes: `/dashboard`, `/onboarding`
 - Public routes: `/login`, `/register`
 
-**Important**: Do NOT add auth checks in `useEffect` with `redirect()` - this creates infinite loops. Let middleware handle route protection.
+**Important**: Do NOT add auth checks in `useEffect` with `redirect()` - this creates infinite loops. Let proxy handle route protection.
 
 ### Type Safety Pattern
 
@@ -279,7 +279,7 @@ className="bg-white/70 backdrop-blur-xl rounded-3xl border-2 border-gray-200/50"
 5. **Using slate colors** - Should be gray (palette consistency)
 6. **Storing numbers as strings** - Age, weight, height are `number` type
 7. **Missing type assertions on arrays** - Use `[] as string[]` not just `[]`
-8. **Auth checks in useEffect** - Let middleware handle route protection
+8. **Auth checks in useEffect** - Let proxy handle route protection
 
 ## Key Considerations
 
@@ -288,4 +288,5 @@ className="bg-white/70 backdrop-blur-xl rounded-3xl border-2 border-gray-200/50"
 - **Domain**: Live at https://app.menuum.com/
 - **Database**: Onboarding saves to `user_profiles` table (not `profiles`)
 - **Form Library**: None - vanilla React state management with validation functions
-- **Next.js Version**: 16 with Turbopack (deprecation warning for "middleware" → "proxy" can be ignored)
+- **Next.js Version**: 16 with Turbopack
+- **Routing Layer**: Uses `proxy.ts` (Next.js 16's replacement for `middleware.ts`) running on Node.js runtime
