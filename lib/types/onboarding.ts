@@ -17,6 +17,26 @@ export interface UserOnboardingData {
     equipo_disponible: string[];
 }
 
+/**
+ * Tipo para la actualización del perfil de usuario
+ * Todos los campos son opcionales para permitir actualizaciones parciales
+ */
+export interface UserProfileUpdate {
+    objetivo?: string;
+    edad?: number;
+    peso?: number;
+    estatura?: number;
+    sexo?: string;
+    nivel_actividad?: string;
+    preferencia_alimenticia?: string;
+    restricciones?: string[];
+    comidas_al_dia?: number;
+    nivel_cocina?: string;
+    tiempo_disponible?: string;
+    equipo_disponible?: string[];
+    updated_at?: string;
+}
+
 export interface OnboardingStepProps {
     data: UserOnboardingData;
     updateData: (partial: Partial<UserOnboardingData>) => void;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { UserProfileUpdate } from '@/lib/types/onboarding';
 
 export async function PATCH(request: NextRequest) {
     try {
@@ -18,8 +19,8 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Preparar datos para actualizar
-        const updateData: Record<string, unknown> = {
+        // Preparar datos para actualizar con tipo seguro
+        const updateData: UserProfileUpdate = {
             updated_at: new Date().toISOString(),
         };
 

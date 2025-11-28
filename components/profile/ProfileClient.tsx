@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { UserOnboardingData } from '@/lib/types/onboarding';
 import { motion } from 'framer-motion';
@@ -14,11 +15,15 @@ interface ProfileClientProps {
     profile: UserOnboardingData & { user_id: string } | null;
 }
 
-export default function ProfileClient({ user, profile }: ProfileClientProps) {
+export default function ProfileClient({ user, profile: initialProfile }: ProfileClientProps) {
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+
+    // Local state for the profile data
+    const [profile, setProfile] = useState(initialProfile);
 
     const [editedProfile, setEditedProfile] = useState({
         edad: profile?.edad || 0,
@@ -45,13 +50,21 @@ export default function ProfileClient({ user, profile }: ProfileClientProps) {
                 throw new Error('Error al actualizar el perfil');
             }
 
+            const result = await response.json();
+
+            // Update local state with the new data
+            if (result.data && profile) {
+                setProfile({
+                    ...profile,
+                    ...editedProfile,
+                });
+            }
+
             setSuccess(true);
             setIsEditing(false);
 
-            // Recargar la página después de 1 segundo para mostrar los nuevos datos
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            // Refresh server component data without full page reload
+            router.refresh();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
