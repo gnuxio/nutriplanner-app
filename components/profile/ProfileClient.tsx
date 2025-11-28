@@ -1,87 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { UserOnboardingData } from '@/lib/types/onboarding';
 import { motion } from 'framer-motion';
-import { User as UserIcon, Mail, Activity, Target, Utensils, Clock, ChefHat, Edit2, Save, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { User as UserIcon, Mail, Activity, Target, Utensils, Clock, ChefHat } from 'lucide-react';
 
 interface ProfileClientProps {
     user: User;
     profile: UserOnboardingData & { user_id: string } | null;
 }
 
-export default function ProfileClient({ user, profile: initialProfile }: ProfileClientProps) {
-    const router = useRouter();
-    const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
-
-    // Local state for the profile data
-    const [profile, setProfile] = useState(initialProfile);
-
-    const [editedProfile, setEditedProfile] = useState({
-        edad: profile?.edad || 0,
-        peso: profile?.peso || 0,
-        estatura: profile?.estatura || 0,
-        comidas_al_dia: profile?.comidas_al_dia || 3,
-    });
-
-    const handleSave = async () => {
-        setIsSaving(true);
-        setError(null);
-        setSuccess(false);
-
-        try {
-            const response = await fetch('/api/profile/update', {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(editedProfile),
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al actualizar el perfil');
-            }
-
-            const result = await response.json();
-
-            // Update local state with the new data
-            if (result.data && profile) {
-                setProfile({
-                    ...profile,
-                    ...editedProfile,
-                });
-            }
-
-            setSuccess(true);
-            setIsEditing(false);
-
-            // Refresh server component data without full page reload
-            router.refresh();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error desconocido');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleCancel = () => {
-        setIsEditing(false);
-        setEditedProfile({
-            edad: profile?.edad || 0,
-            peso: profile?.peso || 0,
-            estatura: profile?.estatura || 0,
-            comidas_al_dia: profile?.comidas_al_dia || 3,
-        });
-    };
-
+export default function ProfileClient({ user, profile }: ProfileClientProps) {
     const getObjetivoLabel = (objetivo: string) => {
         const labels: Record<string, string> = {
             perder_peso: 'Perder peso',
@@ -145,62 +74,10 @@ export default function ProfileClient({ user, profile: initialProfile }: Profile
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white/70 backdrop-blur-xl rounded-3xl border-2 border-gray-200/50 p-8"
             >
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                            Mi Perfil
-                        </h1>
-                        <p className="text-gray-600 mt-2">Gestiona tu información personal y preferencias</p>
-                    </div>
-                    {!isEditing ? (
-                        <Button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                            <Edit2 className="h-4 w-4 mr-2" />
-                            Editar
-                        </Button>
-                    ) : (
-                        <div className="flex gap-2">
-                            <Button
-                                onClick={handleCancel}
-                                variant="outline"
-                                disabled={isSaving}
-                            >
-                                <X className="h-4 w-4 mr-2" />
-                                Cancelar
-                            </Button>
-                            <Button
-                                onClick={handleSave}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                                disabled={isSaving}
-                            >
-                                <Save className="h-4 w-4 mr-2" />
-                                {isSaving ? 'Guardando...' : 'Guardar'}
-                            </Button>
-                        </div>
-                    )}
-                </div>
-
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600"
-                    >
-                        {error}
-                    </motion.div>
-                )}
-
-                {success && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-4 bg-green-50 border border-green-200 rounded-2xl text-green-600"
-                    >
-                        ¡Perfil actualizado exitosamente!
-                    </motion.div>
-                )}
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    Mi Perfil
+                </h1>
+                <p className="text-gray-600 mt-2">Tu información personal y preferencias</p>
             </motion.div>
 
             {/* Información de cuenta */}
@@ -237,69 +114,22 @@ export default function ProfileClient({ user, profile: initialProfile }: Profile
                     Datos Básicos
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {isEditing ? (
-                        <>
-                            <div>
-                                <Label htmlFor="edad">Edad</Label>
-                                <Input
-                                    id="edad"
-                                    type="number"
-                                    value={editedProfile.edad}
-                                    onChange={(e) => setEditedProfile({ ...editedProfile, edad: parseInt(e.target.value) })}
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="peso">Peso (kg)</Label>
-                                <Input
-                                    id="peso"
-                                    type="number"
-                                    value={editedProfile.peso}
-                                    onChange={(e) => setEditedProfile({ ...editedProfile, peso: parseFloat(e.target.value) })}
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="estatura">Estatura (cm)</Label>
-                                <Input
-                                    id="estatura"
-                                    type="number"
-                                    value={editedProfile.estatura}
-                                    onChange={(e) => setEditedProfile({ ...editedProfile, estatura: parseInt(e.target.value) })}
-                                    className="mt-1"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="comidas_al_dia">Comidas al día</Label>
-                                <Input
-                                    id="comidas_al_dia"
-                                    type="number"
-                                    value={editedProfile.comidas_al_dia}
-                                    onChange={(e) => setEditedProfile({ ...editedProfile, comidas_al_dia: parseInt(e.target.value) })}
-                                    className="mt-1"
-                                />
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="p-4 bg-gray-50 rounded-2xl">
-                                <p className="text-sm text-gray-500">Edad</p>
-                                <p className="text-2xl font-bold text-gray-800">{profile.edad} años</p>
-                            </div>
-                            <div className="p-4 bg-gray-50 rounded-2xl">
-                                <p className="text-sm text-gray-500">Peso</p>
-                                <p className="text-2xl font-bold text-gray-800">{profile.peso} kg</p>
-                            </div>
-                            <div className="p-4 bg-gray-50 rounded-2xl">
-                                <p className="text-sm text-gray-500">Estatura</p>
-                                <p className="text-2xl font-bold text-gray-800">{profile.estatura} cm</p>
-                            </div>
-                            <div className="p-4 bg-gray-50 rounded-2xl">
-                                <p className="text-sm text-gray-500">Sexo</p>
-                                <p className="text-2xl font-bold text-gray-800 capitalize">{profile.sexo}</p>
-                            </div>
-                        </>
-                    )}
+                    <div className="p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-sm text-gray-500">Edad</p>
+                        <p className="text-2xl font-bold text-gray-800">{profile.edad} años</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-sm text-gray-500">Peso</p>
+                        <p className="text-2xl font-bold text-gray-800">{profile.peso} kg</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-sm text-gray-500">Estatura</p>
+                        <p className="text-2xl font-bold text-gray-800">{profile.estatura} cm</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-sm text-gray-500">Sexo</p>
+                        <p className="text-2xl font-bold text-gray-800 capitalize">{profile.sexo}</p>
+                    </div>
                 </div>
             </motion.div>
 
