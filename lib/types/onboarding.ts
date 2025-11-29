@@ -7,6 +7,9 @@ export interface UserOnboardingData {
     edad: number;
     peso: number;
     estatura: number;
+    nombre: string;
+    apellido: string;
+    pais: string;
     sexo: string;
     nivel_actividad: string;
     preferencia_alimenticia: string;

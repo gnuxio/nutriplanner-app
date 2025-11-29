@@ -6,20 +6,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { UserOnboardingData } from "@/lib/types/onboarding";
+import { createProfile } from "@/lib/api/profile";
 
 import Step1Objetivo from "@/components/onboarding/Step1Objetivo";
 import Step2Basicos from "@/components/onboarding/Step2Basicos";
-import Step3Sexo from "@/components/onboarding/Step3Sexo";
-import Step4Actividad from "@/components/onboarding/Step4Actividad";
-import Step5Preferencias from "@/components/onboarding/Step5Preferencias";
-import Step6Restricciones from "@/components/onboarding/Step6Restricciones";
-import Step7Habitos from "@/components/onboarding/Step7Habitos";
-import Step8Confirmacion from "@/components/onboarding/Step8Confirmacion";
+import Step3Personales from "@/components/onboarding/Step3Personales";
+import Step4Sexo from "@/components/onboarding/Step3Sexo";
+import Step5Actividad from "@/components/onboarding/Step4Actividad";
+import Step6Preferencias from "@/components/onboarding/Step5Preferencias";
+import Step7Restricciones from "@/components/onboarding/Step6Restricciones";
+import Step8Habitos from "@/components/onboarding/Step7Habitos";
+import Step9Confirmacion from "@/components/onboarding/Step8Confirmacion";
 
 export default function Onboarding() {
     const router = useRouter();
 
-    const totalSteps = 8;
+    const totalSteps = 9;
 
     const [currentStep, setCurrentStep] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
@@ -30,6 +32,9 @@ export default function Onboarding() {
         edad: 0,
         peso: 0,
         estatura: 0,
+        nombre: "",
+        apellido: "",
+        pais: "",
         sexo: "",
         nivel_actividad: "",
         preferencia_alimenticia: "",
@@ -53,10 +58,12 @@ export default function Onboarding() {
             case 2:
                 return userData.edad && userData.peso && userData.estatura;
             case 3:
-                return userData.sexo !== "";
+                return userData.nombre.trim() !== "" && userData.apellido.trim() !== "" && userData.pais.trim() !== "";
             case 4:
+                return userData.sexo !== "";
+            case 5:
                 return userData.nivel_actividad !== "";
-            case 7:
+            case 8:
                 return userData.nivel_cocina && userData.tiempo_disponible;
             default:
                 return true;
@@ -68,20 +75,17 @@ export default function Onboarding() {
             setIsSaving(true);
             setError(null);
 
-            const response = await fetch("/api/profile/onboarding", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(userData),
+            // Map frontend data to backend payload (basic fields only)
+            await createProfile({
+                name: userData.nombre,
+                last_name: userData.apellido,
+                country: userData.pais,
+                goal: userData.objetivo,
+                activity_level: userData.nivel_actividad,
+                dislikes: [], // Not collected in onboarding yet
             });
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || 'Error al guardar el perfil');
-            }
-
+            // Redirect to dashboard on success
             router.push("/");
         } catch (error) {
             console.error("Error guardando onboarding:", error);
@@ -96,14 +100,15 @@ export default function Onboarding() {
         switch (currentStep) {
             case 1: return <Step1Objetivo {...props} />;
             case 2: return <Step2Basicos {...props} />;
-            case 3: return <Step3Sexo {...props} />;
-            case 4: return <Step4Actividad {...props} />;
-            case 5: return <Step5Preferencias {...props} />;
-            case 6: return <Step6Restricciones {...props} />;
-            case 7: return <Step7Habitos {...props} />;
-            case 8:
+            case 3: return <Step3Personales {...props} />;
+            case 4: return <Step4Sexo {...props} />;
+            case 5: return <Step5Actividad {...props} />;
+            case 6: return <Step6Preferencias {...props} />;
+            case 7: return <Step7Restricciones {...props} />;
+            case 8: return <Step8Habitos {...props} />;
+            case 9:
                 return (
-                    <Step8Confirmacion
+                    <Step9Confirmacion
                         data={userData}
                         isLoading={isSaving}
                         onFinish={handleFinish}
