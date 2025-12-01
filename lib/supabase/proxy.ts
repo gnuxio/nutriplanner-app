@@ -34,6 +34,7 @@ export async function updateSession(request: NextRequest) {
     const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
                       request.nextUrl.pathname.startsWith('/register');
     const isProtectedPage = request.nextUrl.pathname.startsWith('/onboarding') ||
+                           request.nextUrl.pathname.startsWith('/profile') ||
                            request.nextUrl.pathname === '/';
 
     // Redirect authenticated users away from auth pages

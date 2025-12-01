@@ -20,6 +20,17 @@ export interface UserOnboardingData {
     equipo_disponible: string[];
 }
 
+/**
+ * Tipo para el perfil completo del usuario almacenado en la base de datos
+ * Extiende UserOnboardingData con campos adicionales de la tabla user_profiles
+ */
+export interface UserProfile extends UserOnboardingData {
+    user_id: string;
+    created_at?: string;
+    updated_at?: string;
+    onboarding_completed?: boolean;
+}
+
 export interface OnboardingStepProps {
     data: UserOnboardingData;
     updateData: (partial: Partial<UserOnboardingData>) => void;
