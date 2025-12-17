@@ -13,6 +13,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.menuum.com';
 export interface CreateProfilePayload {
     name: string;
     last_name: string;
+    age: number;
+    weight: number,
+    height: number,
+    gender: string,
     country: string;
     goal: string;
     activity_level: string;

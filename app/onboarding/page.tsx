@@ -79,8 +79,12 @@ export default function Onboarding() {
             await createProfile({
                 name: userData.nombre,
                 last_name: userData.apellido,
-                country: userData.pais,
+                age: userData.edad,
+                weight: userData.peso,
+                height: userData.estatura,
+                gender: userData.sexo,
                 goal: userData.objetivo,
+                country: userData.pais,
                 activity_level: userData.nivel_actividad,
                 dislikes: [], // Not collected in onboarding yet
             });
