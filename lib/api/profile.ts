@@ -1,22 +1,22 @@
 /**
  * API service for profile operations with the Go backend
+ * ACTUALIZADO: Usa cookies httpOnly en lugar de JWT en header
  */
 
-import { createClient } from "@/lib/supabase/client";
+import { fetchWithAuth } from '@/lib/auth/interceptor';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.menuum.com';
 
 /**
  * Profile data structure matching the Go backend CreateProfileRequest
- * Only sending basic fields for now
  */
 export interface CreateProfilePayload {
     name: string;
     last_name: string;
     age: number;
-    weight: number,
-    height: number,
-    gender: string,
+    weight: number;
+    height: number;
+    gender: string;
     country: string;
     goal: string;
     activity_level: string;
@@ -24,7 +24,7 @@ export interface CreateProfilePayload {
 }
 
 /**
- * Backend response for profile creation (basic fields only)
+ * Backend response for profile creation
  */
 export interface ProfileResponse {
     id: string;
@@ -37,31 +37,16 @@ export interface ProfileResponse {
 }
 
 /**
- * Get the Supabase JWT token from the current session
- */
-async function getAuthToken(): Promise<string> {
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error || !data.session) {
-        throw new Error('No hay sesión activa. Por favor inicia sesión nuevamente.');
-    }
-
-    return data.session.access_token;
-}
-
-/**
  * Create a new profile in the Go backend
  */
 export async function createProfile(payload: CreateProfilePayload): Promise<ProfileResponse> {
     try {
-        const token = await getAuthToken();
-
-        const response = await fetch(`${API_URL}/api/v1/profile`, {
+        // CAMBIO: usar fetchWithAuth que maneja cookies automáticamente
+        const response = await fetchWithAuth(`${API_URL}/api/v1/profile`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                // NO Authorization header - las cookies se envían automáticamente
             },
             body: JSON.stringify(payload),
         });
@@ -69,7 +54,6 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
         const data = await response.json();
 
         if (!response.ok) {
-            // Extract error message from backend response
             const errorMessage = data.error || data.message || 'Error al crear el perfil';
             throw new Error(errorMessage);
         }
@@ -88,13 +72,9 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
  */
 export async function getProfile(): Promise<ProfileResponse> {
     try {
-        const token = await getAuthToken();
-
-        const response = await fetch(`${API_URL}/api/v1/profile`, {
+        const response = await fetchWithAuth(`${API_URL}/api/v1/profile`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
+            // NO Authorization header - las cookies se envían automáticamente
         });
 
         const data = await response.json();
@@ -118,13 +98,11 @@ export async function getProfile(): Promise<ProfileResponse> {
  */
 export async function updateProfile(payload: Partial<CreateProfilePayload>): Promise<ProfileResponse> {
     try {
-        const token = await getAuthToken();
-
-        const response = await fetch(`${API_URL}/api/v1/profile`, {
+        const response = await fetchWithAuth(`${API_URL}/api/v1/profile`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                // NO Authorization header - las cookies se envían automáticamente
             },
             body: JSON.stringify(payload),
         });

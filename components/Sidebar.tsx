@@ -2,7 +2,7 @@
 
 import { Home, Calendar, User, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 import { useSidebarContext } from "./LayoutWrapper";
 
 interface SidebarProps {
@@ -13,11 +13,10 @@ interface SidebarProps {
 export default function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const supabase = createClient();
     const { isCollapsed, setIsCollapsed } = useSidebarContext();
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut();
+        await authClient.logout();
         router.push('/login');
     };
 

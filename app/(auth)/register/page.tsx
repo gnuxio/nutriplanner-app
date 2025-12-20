@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,23 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { ChefHat, Sparkles } from "lucide-react";
+import { authClient } from "@/lib/auth/client";
 
 export default function Register() {
     const router = useRouter();
-    const supabase = createClient();
+    const [step, setStep] = useState<'register' | 'verify'>('register');
 
-    useEffect(() => {
-        const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.replace("/");
-            }
-        };
-        checkSession();
-    }, [router, supabase]);
-
+    // Registro
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+
+    // Verificación
+    const [code, setCode] = useState("");
+
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -36,31 +32,57 @@ export default function Register() {
         setError("");
         setMessage("");
 
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-        });
-
-        if (error) {
+        try {
+            await authClient.register(email, password, name || undefined);
+            setMessage("Cuenta creada. Revisa tu correo para obtener el código de verificación.");
+            setStep('verify');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al registrarse');
+        } finally {
             setLoading(false);
-            setError(error.message);
-            return;
         }
+    }
 
-        // Create profile entry with user ID
-        if (data.user) {
-            const { error: profileError } = await supabase.from('profiles').insert({
-                id: data.user.id,
-            });
+    async function handleVerify(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+        setMessage("");
 
-            if (profileError) {
-                console.error('Error creating profile:', profileError);
-                // Continue anyway, profile can be created later
-            }
+        try {
+            await authClient.verifyEmail(email, code);
+            setMessage("Email verificado correctamente. Redirigiendo...");
+
+            // Auto-login después de verificar
+            setTimeout(async () => {
+                try {
+                    await authClient.login(email, password);
+                    router.push("/onboarding");
+                } catch (err) {
+                    // Si el auto-login falla, redirigir a login manual
+                    router.push("/login");
+                }
+            }, 1500);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al verificar email');
+        } finally {
+            setLoading(false);
         }
+    }
 
-        setLoading(false);
-        setMessage("Cuenta creada correctamente. Revisa tu correo para confirmar tu registro.");
+    async function handleResendCode() {
+        setLoading(true);
+        setError("");
+        setMessage("");
+
+        try {
+            await authClient.resendVerification(email);
+            setMessage("Código reenviado. Revisa tu correo.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error al reenviar código');
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -84,74 +106,141 @@ export default function Register() {
                             </div>
                         </div>
                         <CardTitle className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                            Crear cuenta
+                            {step === 'register' ? 'Crear cuenta' : 'Verificar email'}
                         </CardTitle>
-                        <p className="text-gray-500 text-sm">Únete y empieza a planificar mejor tus comidas 🍽️</p>
+                        <p className="text-gray-500 text-sm">
+                            {step === 'register'
+                                ? 'Únete y empieza a planificar mejor tus comidas 🍽️'
+                                : 'Ingresa el código que enviamos a tu correo'
+                            }
+                        </p>
                     </CardHeader>
 
                     <CardContent>
-                        <form onSubmit={handleRegister} className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="email" className="text-gray-700 font-medium">
-                                    Correo electrónico
-                                </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="tucorreo@ejemplo.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
-                                />
-                            </div>
+                        {step === 'register' ? (
+                            <form onSubmit={handleRegister} className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="name" className="text-gray-700 font-medium">
+                                        Nombre (opcional)
+                                    </Label>
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        placeholder="Tu nombre"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
+                                    />
+                                </div>
 
-                            <div className="flex flex-col gap-2">
-                                <Label htmlFor="password" className="text-gray-700 font-medium">
-                                    Contraseña
-                                </Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
-                                />
-                            </div>
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="email" className="text-gray-700 font-medium">
+                                        Correo electrónico
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        placeholder="tucorreo@ejemplo.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
+                                    />
+                                </div>
 
-                            {/* Mensajes */}
-                            {error && (
-                                <p className="text-sm text-red-500 text-center bg-red-50 py-2 rounded-lg border border-red-100">
-                                    {error}
-                                </p>
-                            )}
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="password" className="text-gray-700 font-medium">
+                                        Contraseña
+                                    </Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
+                                    />
+                                </div>
 
-                            {message && (
-                                <p className="text-sm text-green-600 text-center bg-green-50 py-2 rounded-lg border border-green-100">
-                                    {message}
-                                </p>
-                            )}
+                                {error && (
+                                    <p className="text-sm text-red-500 text-center bg-red-50 py-2 rounded-lg border border-red-100">
+                                        {error}
+                                    </p>
+                                )}
 
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-6 text-lg rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold shadow-xl shadow-green-500/20 hover:shadow-green-500/40 transition-all hover:scale-[1.02]"
-                            >
-                                {loading ? "Creando cuenta..." : "Registrarme"}
-                            </Button>
+                                {message && (
+                                    <p className="text-sm text-green-600 text-center bg-green-50 py-2 rounded-lg border border-green-100">
+                                        {message}
+                                    </p>
+                                )}
 
-                            <p className="text-sm text-center text-gray-500 mt-3">
-                                ¿Ya tienes cuenta?{" "}
-                                <a
-                                    href="/login"
-                                    className="text-green-600 hover:text-emerald-700 font-medium hover:underline"
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full py-6 text-lg rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold shadow-xl shadow-green-500/20 hover:shadow-green-500/40 transition-all hover:scale-[1.02]"
                                 >
-                                    Inicia sesión
-                                </a>
-                            </p>
-                        </form>
+                                    {loading ? "Creando cuenta..." : "Registrarme"}
+                                </Button>
+
+                                <p className="text-sm text-center text-gray-500 mt-3">
+                                    ¿Ya tienes cuenta?{" "}
+                                    <a
+                                        href="/login"
+                                        className="text-green-600 hover:text-emerald-700 font-medium hover:underline"
+                                    >
+                                        Inicia sesión
+                                    </a>
+                                </p>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleVerify} className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <Label htmlFor="code" className="text-gray-700 font-medium">
+                                        Código de verificación
+                                    </Label>
+                                    <Input
+                                        id="code"
+                                        type="text"
+                                        placeholder="123456"
+                                        value={code}
+                                        onChange={(e) => setCode(e.target.value)}
+                                        required
+                                        maxLength={6}
+                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all text-center text-2xl tracking-widest"
+                                    />
+                                </div>
+
+                                {error && (
+                                    <p className="text-sm text-red-500 text-center bg-red-50 py-2 rounded-lg border border-red-100">
+                                        {error}
+                                    </p>
+                                )}
+
+                                {message && (
+                                    <p className="text-sm text-green-600 text-center bg-green-50 py-2 rounded-lg border border-green-100">
+                                        {message}
+                                    </p>
+                                )}
+
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full py-6 text-lg rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold shadow-xl shadow-green-500/20 hover:shadow-green-500/40 transition-all hover:scale-[1.02]"
+                                >
+                                    {loading ? "Verificando..." : "Verificar email"}
+                                </Button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleResendCode}
+                                    disabled={loading}
+                                    className="text-sm text-center text-gray-500 hover:text-green-600 transition-colors"
+                                >
+                                    ¿No recibiste el código? Reenviar
+                                </button>
+                            </form>
+                        )}
                     </CardContent>
                 </Card>
 

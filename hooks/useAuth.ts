@@ -1,55 +1,69 @@
-import { useEffect, useState } from 'react';
+/**
+ * Hook de autenticación que usa el auth-service con cookies
+ * Reemplaza el hook de Supabase
+ */
+
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { authClient, type User } from '@/lib/auth/client';
 
 interface UseAuthReturn {
-    user: User | null;
-    loading: boolean;
-    signOut: () => Promise<void>;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
-/**
- * Hook personalizado para manejar la autenticación
- * Proporciona el usuario actual, estado de carga y función de logout
- */
 export function useAuth(): UseAuthReturn {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-    const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-    useEffect(() => {
-        // Obtener sesión inicial
-        const getSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user ?? null);
-            setLoading(false);
-        };
+  // Obtener usuario actual
+  const fetchUser = useCallback(async () => {
+    try {
+      setError(null);
+      const userData = await authClient.me();
+      setUser(userData);
+    } catch (err) {
+      setUser(null);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        getSession();
+  // Inicializar: obtener usuario al montar
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
-        // Escuchar cambios de autenticación
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                setUser(session?.user ?? null);
-                setLoading(false);
-            }
-        );
+  // Logout
+  const signOut = useCallback(async () => {
+    try {
+      await authClient.logout();
+      setUser(null);
+      router.push('/login');
+    } catch (err) {
+      console.error('Error during logout:', err);
+      // Limpiar estado local incluso si falla el request
+      setUser(null);
+      router.push('/login');
+    }
+  }, [router]);
 
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [supabase]);
+  // Refresh manual
+  const refreshUser = useCallback(async () => {
+    await fetchUser();
+  }, [fetchUser]);
 
-    const signOut = async () => {
-        await supabase.auth.signOut();
-        router.push('/login');
-    };
-
-    return {
-        user,
-        loading,
-        signOut,
-    };
+  return {
+    user,
+    loading,
+    error,
+    signOut,
+    refreshUser,
+  };
 }

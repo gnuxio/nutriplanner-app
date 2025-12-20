@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,75 +8,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { ChefHat, Sparkles } from "lucide-react";
-import { AuthError } from "@supabase/supabase-js";
-
-// Tipos para la respuesta de Supabase
-type AuthResponse = {
-    data: {
-        user: any;
-        session: any;
-    } | null;
-    error: AuthError | null;
-};
+import { authClient } from "@/lib/auth/client";
 
 export default function Login() {
     const router = useRouter();
-    const supabase = createClient();
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
 
-    useEffect(() => {
-        // Solo verificar sesión inicial, sin redirección automática
-        const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.replace("/");
-            }
-        };
-
-        checkSession();
-    }, [router, supabase]);
-
-    // Tipado para el evento del formulario
     async function handleLogin(e: React.FormEvent<HTMLFormElement>): Promise<void> {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
-            // Tipado para las credenciales de autenticación
-            const { data, error: signInError }: AuthResponse = await supabase.auth.signInWithPassword({
-                email: email.trim(),
-                password: password
-            });
-
-            setLoading(false);
-
-            if (signInError) {
-                // Tipado específico para errores de Supabase
-                setError(signInError.message);
-                return;
-            }
-
-            if (data?.user && data?.session) {
-                router.push("/");
-            }
+            await authClient.login(email.trim(), password);
+            router.push("/");
         } catch (err) {
-            // Manejo de errores no tipados
             setLoading(false);
-            setError("Ha ocurrido un error inesperado. Por favor, intenta nuevamente.");
+            const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+
+            // Manejar error específico de email no verificado
+            if (errorMessage.includes('not confirmed') || errorMessage.includes('not verified')) {
+                setError("Debes verificar tu email antes de iniciar sesión. Revisa tu correo.");
+            } else {
+                setError(errorMessage);
+            }
         }
     }
 
-    // Tipado para el evento de cambio de email
     function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>): void {
         setEmail(e.target.value);
         if (error) setError("");
     }
 
-    // Tipado para el evento de cambio de password
     function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>): void {
         setPassword(e.target.value);
         if (error) setError("");
