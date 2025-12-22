@@ -1,9 +1,16 @@
 /**
  * Cliente de autenticación para Client Components
  * Maneja todas las operaciones de auth con cookies httpOnly
+ *
+ * En desarrollo local, usa el proxy de Next.js (/api/auth) para evitar problemas con cookies cross-origin
+ * En producción, llama directamente al backend de auth
  */
 
-const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_URL || 'https://api.menuum.com/auth';
+// En desarrollo local, usar proxy de Next.js para evitar problemas con cookies cross-origin
+const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const AUTH_URL = isLocal
+  ? '/api/auth' // Proxy local
+  : (process.env.NEXT_PUBLIC_AUTH_URL || 'https://api.menuum.com/auth'); // Directo en producción
 
 export interface User {
   id: string;
