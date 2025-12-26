@@ -109,11 +109,6 @@ export default function ProfileView({ user }: ProfileViewProps) {
                 {profile.name} {profile.last_name}
               </h2>
               <p className="text-gray-600 mt-1">{user.email}</p>
-              {user.email_verified && (
-                <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
-                  ✓ Email verificado
-                </span>
-              )}
             </div>
           </div>
         </motion.div>
