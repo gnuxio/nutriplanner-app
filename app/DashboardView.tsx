@@ -254,17 +254,17 @@ export default function DashboardView({ user }: DashboardViewProps) {
               </Card>
             </motion.div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Quick Stats - Simplified */}
+            <div className="grid grid-cols-2 gap-3">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Card className="bg-white/70 backdrop-blur-xl border-2 border-gray-200/50 hover:shadow-lg transition-all">
-                  <CardContent className="p-5">
-                    <div className="text-sm text-gray-600 mb-1">Comidas hoy</div>
-                    <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/40 hover:bg-white/50 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="text-xs text-gray-500 mb-1">Comidas hoy</div>
+                    <div className="text-2xl font-semibold text-gray-700">
                       {todayData.meals.length}
                     </div>
                   </CardContent>
@@ -276,13 +276,13 @@ export default function DashboardView({ user }: DashboardViewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
               >
-                <Card className="bg-white/70 backdrop-blur-xl border-2 border-gray-200/50 hover:shadow-lg transition-all">
-                  <CardContent className="p-5">
-                    <div className="text-sm text-gray-600 mb-1">Plan semanal</div>
-                    <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/40 hover:bg-white/50 transition-colors">
+                  <CardContent className="p-4">
+                    <div className="text-xs text-gray-500 mb-1">Plan semanal</div>
+                    <div className="text-2xl font-semibold text-gray-700">
                       {activePlan.calories_total.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">kcal totales</div>
+                    <div className="text-xs text-gray-400 mt-0.5">kcal totales</div>
                   </CardContent>
                 </Card>
               </motion.div>
