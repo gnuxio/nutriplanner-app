@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles, Eye, EyeOff } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 
 function ResetPasswordForm() {
@@ -21,6 +21,8 @@ function ResetPasswordForm() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         const emailParam = searchParams.get('email');
@@ -148,32 +150,60 @@ function ResetPasswordForm() {
                                 <Label htmlFor="newPassword" className="text-gray-700 font-medium">
                                     Nueva contraseña
                                 </Label>
-                                <Input
-                                    id="newPassword"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    required
-                                    minLength={8}
-                                    className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="newPassword"
+                                        type={showNewPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        required
+                                        minLength={8}
+                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                    >
+                                        {showNewPassword ? (
+                                            <EyeOff className="w-5 h-5" />
+                                        ) : (
+                                            <Eye className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">
                                     Confirmar contraseña
                                 </Label>
-                                <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                    minLength={8}
-                                    className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="confirmPassword"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        minLength={8}
+                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                    >
+                                        {showConfirmPassword ? (
+                                            <EyeOff className="w-5 h-5" />
+                                        ) : (
+                                            <Eye className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             {error && (

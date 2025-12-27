@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { ChefHat, Sparkles } from "lucide-react";
+import { ChefHat, Sparkles, Eye, EyeOff } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 
 export default function Register() {
@@ -25,6 +25,7 @@ export default function Register() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -152,15 +153,29 @@ export default function Register() {
                                     <Label htmlFor="password" className="text-gray-700 font-medium">
                                         Contraseña
                                     </Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            id="password"
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="••••••••"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            className="rounded-xl border-gray-300 focus:border-green-500 focus:ring-green-500 transition-all pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-5 h-5" />
+                                            ) : (
+                                                <Eye className="w-5 h-5" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {error && (
